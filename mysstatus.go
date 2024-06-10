@@ -424,38 +424,38 @@ func malshine() {
 	fmt.Println("Over Usage:")
 	for _, user := range keys {
 		report := "User:" + user + "\n"
-		to_print := false
+		toPrint := false
 		for _, job := range UserJobTable[user] {
 			gpuAmount := 0
-			to_report := false
-			job_report := "Job:" + job.JobID + " Account:" + job.Account + " Qos:" + job.Qos
+			toReport := false
+			jobReport := "Job:" + job.JobID + " Account:" + job.Account + " Qos:" + job.Qos
 			for _, v := range job.GpuTable {
 				gpuAmount += v
 			}
 			if gpuAmount >= 2 {
-				to_report = true
-				job_report += " Gpu:" + strconv.Itoa(gpuAmount)
+				toReport = true
+				jobReport += " Gpu:" + strconv.Itoa(gpuAmount)
 			}
 			if gpuAmount > 0 && job.CpuAmount > 8 {
-				to_report = true
-				job_report += " Cpu:" + strconv.Itoa(job.CpuAmount)
+				toReport = true
+				jobReport += " Cpu:" + strconv.Itoa(job.CpuAmount)
 			}
 			if job.MemAmount != "" {
-				to_report = true
 				memAmount, err := strconv.Atoi(job.MemAmount[:len(job.MemAmount)-2])
 				if err != nil {
 					panic(err)
 				}
 				if memAmount > 100 {
-					job_report += " Mem:" + job.MemAmount
+					toReport = true
+					jobReport += " Mem:" + job.MemAmount
 				}
 			}
-			if to_report {
-				to_print = true
-				report += job_report + "\n"
+			if toReport {
+				toPrint = true
+				report += jobReport + "\n"
 			}
 		}
-		if to_print {
+		if toPrint {
 			fmt.Println(report)
 		}
 	}
