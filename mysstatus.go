@@ -441,7 +441,9 @@ func malshine() {
 				jobReport += " Cpu:" + strconv.Itoa(job.CpuAmount)
 			}
 			if job.MemAmount != "" {
-				memAmount, err := strconv.Atoi(job.MemAmount[:len(job.MemAmount)-2])
+				memAmount, err := strconv.Atoi(job.MemAmount)
+				println(job.MemAmount, memAmount)
+
 				if err != nil {
 					panic(err)
 				}
