@@ -433,12 +433,10 @@ func malshine() {
 				gpuAmount += v
 			}
 			if gpuAmount >= 2 {
-				to_print = true
 				to_report = true
 				job_report += " Gpu:" + strconv.Itoa(gpuAmount)
 			}
 			if gpuAmount > 0 && job.CpuAmount > 8 {
-				to_print = true
 				to_report = true
 				job_report += " Cpu:" + strconv.Itoa(job.CpuAmount)
 			}
