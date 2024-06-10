@@ -442,6 +442,7 @@ func malshine() {
 			}
 			if job.MemAmount != "" {
 				memAmount, err := strconv.Atoi(job.MemAmount[:len(job.MemAmount)-2])
+				println(job.MemAmount[:len(job.MemAmount)-2], memAmount)
 				if err != nil {
 					panic(err)
 				}
