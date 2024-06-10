@@ -428,7 +428,7 @@ func malshine() {
 		for _, job := range UserJobTable[user] {
 			gpuAmount := 0
 			toReport := false
-			jobReport := "Job:" + job.JobID + " Account:" + job.Account + " Qos:" + job.Qos
+			jobReport := "    Job:" + job.JobID + " Account:" + job.Account + " Qos:" + job.Qos
 			for _, v := range job.GpuTable {
 				gpuAmount += v
 			}
