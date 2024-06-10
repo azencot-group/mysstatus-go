@@ -419,6 +419,48 @@ func malshine() {
 		}
 		fmt.Println(accountLine)
 	}
+	fmt.Println("====================================================================================")
+	fmt.Println()
+	fmt.Println("Over Usage:")
+	for _, user := range keys {
+		report := "User:" + user + "\n"
+		to_print := false
+		for _, job := range UserJobTable[user] {
+			gpuAmount := 0
+			to_report := false
+			job_report := "Job:" + job.JobID + " Account:" + job.Account + " Qos:" + job.Qos
+			for _, v := range job.GpuTable {
+				gpuAmount += v
+			}
+			if gpuAmount >= 2 {
+				to_print = true
+				to_report = true
+				job_report += " Gpu:" + strconv.Itoa(gpuAmount)
+			}
+			if gpuAmount > 0 && job.CpuAmount > 8 {
+				to_print = true
+				to_report = true
+				job_report += " Cpu:" + strconv.Itoa(job.CpuAmount)
+			}
+			if job.MemAmount != "" {
+				to_report = true
+				memAmount, err := strconv.Atoi(job.MemAmount[:len(job.MemAmount)-2])
+				if err != nil {
+					panic(err)
+				}
+				if memAmount > 100 {
+					job_report += " Mem:" + job.MemAmount
+				}
+			}
+			if to_report {
+				to_print = true
+				report += job_report + "\n"
+			}
+		}
+		if to_print {
+			fmt.Println(report)
+		}
+	}
 }
 
 func NewJob(line string) *Job {
