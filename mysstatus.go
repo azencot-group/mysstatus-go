@@ -419,7 +419,9 @@ func malshine() {
 			padg := strings.Repeat(" ", max(len(k)-len(numGpu), 0))
 			accountLine += " | " + numGpu + padg
 		}
-		fmt.Println(accountLine)
+		if AccountGpuUseTable[account]["total"] > 0 {
+			fmt.Println(accountLine)
+		}
 	}
 	fmt.Println("====================================================================================")
 	fmt.Println()
