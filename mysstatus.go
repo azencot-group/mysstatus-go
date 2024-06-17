@@ -374,7 +374,9 @@ func malshine() {
 			padg := strings.Repeat(" ", max(len(k)-len(numGpu), 0))
 			userLine += " | " + numGpu + padg
 		}
-		fmt.Println(userLine)
+		if UserGpuQosTable[user]["total"] > 0 {
+			fmt.Println(userLine)
+		}
 	}
 	fmt.Println(strings.ReplaceAll(underline, "-", "="))
 	fmt.Println()
