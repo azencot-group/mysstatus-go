@@ -467,6 +467,7 @@ func NewJob(line string) *Job {
 	jobID := filterdSplitLine[0]
 	User := filterdSplitLine[1]
 	Account := filterdSplitLine[2]
+	println(Account)
 	QOS := filterdSplitLine[4]
 	Data := filterdSplitLine[len(filterdSplitLine)-1]
 	DataSplit := strings.Split(Data, ",")
