@@ -456,6 +456,7 @@ func malshine() {
 }
 
 func NewJob(line string) *Job {
+	println(line)
 	splitLine := strings.Split(line, "|")
 	// remove empty strings
 	filterdSplitLine := make([]string, 0)
@@ -465,11 +466,8 @@ func NewJob(line string) *Job {
 		}
 	}
 	jobID := filterdSplitLine[0]
-	println(jobID)
 	User := filterdSplitLine[1]
 	Account := filterdSplitLine[2]
-	println(User)
-	println(Account)
 	QOS := filterdSplitLine[4]
 	Data := filterdSplitLine[len(filterdSplitLine)-1]
 	DataSplit := strings.Split(Data, ",")
