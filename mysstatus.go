@@ -532,7 +532,7 @@ func callSccatmgr() []byte {
 }
 
 func callsqueue() []byte {
-	cmdStruct := exec.Command("/usr/bin/squeue", "-state=R", "--Format=\"JobId:|,UserName:|,Account:|,partition:|,QOS:|,tres-alloc:\"")
+	cmdStruct := exec.Command("/usr/bin/squeue", "-state=R", "--Format", "\"JobId:|,UserName:|,Account:|,partition:|,QOS:|,tres-alloc:\"")
 	cmdOutput, err := cmdStruct.Output()
 	if err != nil {
 		panic(err)
