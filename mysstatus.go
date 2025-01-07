@@ -269,7 +269,7 @@ func malshine() {
 	UserJobTable := make(map[string][]*Job)
 	userAccountTable := make(map[string]string)
 	for _, line := range split_squeue[1:] {
-		println(line)
+		println(string(line))
 		if len(line) > 0 {
 			job := NewJob(string(line))
 			UserJobTable[job.User] = append(UserJobTable[job.User], job)
