@@ -262,27 +262,17 @@ func stringInSlice(a string, list []string) bool {
 }
 
 func malshine() {
-	sacctmgrByteSlice := callSccatmgr()
-	split_sacctmgr := bytes.Split(sacctmgrByteSlice, []byte("\n"))
-	// remove empty lines
-	accountOrgTable := make(map[string]string)
-	for _, line := range split_sacctmgr[1:] {
-		if len(line) > 0 {
-			split_line := strings.Split(string(line), "|")
-			accountOrgTable[split_line[0]] = split_line[1]
-		}
-	}
-	sacctByteSlice := callSccat()
-	splitSacct := bytes.Split(sacctByteSlice, []byte("\n"))
+	//sacctmgrByteSlice := callSccatmgr()
+	//split_sacctmgr := bytes.Split(sacctmgrByteSlice, []byte("\n"))
+	squeueByteSlice := callsqueue()
+	split_squeue := bytes.Split(squeueByteSlice, []byte("\n"))
 	UserJobTable := make(map[string][]*Job)
 	userAccountTable := make(map[string]string)
-	UserOrgTable := make(map[string]string)
-	for _, line := range splitSacct[2:] {
+	for _, line := range split_squeue[2:] {
 		if len(line) > 0 {
 			job := NewJob(string(line))
 			UserJobTable[job.User] = append(UserJobTable[job.User], job)
 			userAccountTable[job.User] = job.Account
-			UserOrgTable[job.User] = accountOrgTable[job.Account]
 		}
 	}
 	UserGpuUseTable := make(map[string]map[string]int)
@@ -342,7 +332,7 @@ func malshine() {
 	fmt.Println("User Gpu Summary:")
 	maxUserLen := 0
 	for _, user := range keys {
-		userTotalLen := len(user) + 4 + len(UserOrgTable[user]) + len(userAccountTable[user])
+		userTotalLen := len(user) + 4 + len(userAccountTable[user])
 		if userTotalLen > maxUserLen {
 			maxUserLen = userTotalLen
 		}
@@ -365,10 +355,10 @@ func malshine() {
 			number += " "
 		}
 		total := strconv.Itoa(UserGpuUseTable[user]["total"]) + "(" + strconv.Itoa(UserGpuQosTable[user]["total"]) + ")"
-		UserTotalLen := len(user) + 4 + len(UserOrgTable[user]) + len(userAccountTable[user])
+		UserTotalLen := len(user) + 4 + len(userAccountTable[user])
 		pad := strings.Repeat(" ", max(maxUserLen-UserTotalLen, 0))
 		padt := strings.Repeat(" ", max(len(" Total ")-len(total), 0))
-		userLine := number + " | " + user + "(" + userAccountTable[user] + ")" + "(" + UserOrgTable[user] + ")" + pad + " | " + total + padt
+		userLine := number + " | " + user + "(" + userAccountTable[user] + ")" + pad + " | " + total + padt
 		for _, k := range gpuKeys {
 			numGpu := strconv.Itoa(UserGpuUseTable[user][k]) + "(" + strconv.Itoa(UserGpuQosTable[user][k]) + ")"
 			padg := strings.Repeat(" ", max(len(k)-len(numGpu), 0))
@@ -390,7 +380,7 @@ func malshine() {
 	fmt.Println("Account Gpu Summary:")
 	maxAccountLen := 0
 	for _, account := range accountKeys {
-		AccountTotalLen := len(account) + 2 + len(accountOrgTable[account])
+		AccountTotalLen := len(account) + 2
 		if AccountTotalLen > maxAccountLen {
 			maxAccountLen = AccountTotalLen
 		}
@@ -410,10 +400,10 @@ func malshine() {
 			number += " "
 		}
 		total := strconv.Itoa(AccountGpuUseTable[account]["total"]) + "(" + strconv.Itoa(AccountGpuQosTable[account]["total"]) + ")"
-		AccountTotalLen := len(account) + 2 + len(accountOrgTable[account])
+		AccountTotalLen := len(account) + 2
 		pad := strings.Repeat(" ", max(maxAccountLen-AccountTotalLen, 0))
 		padt := strings.Repeat(" ", max(len(" Total ")-len(total), 0))
-		accountLine := number + " | " + account + "(" + accountOrgTable[account] + ")" + pad + " | " + total + padt
+		accountLine := number + " | " + account + pad + " | " + total + padt
 		for _, k := range gpuKeys {
 			numGpu := strconv.Itoa(AccountGpuUseTable[account][k]) + "(" + strconv.Itoa(AccountGpuQosTable[account][k]) + ")"
 			padg := strings.Repeat(" ", max(len(k)-len(numGpu), 0))
@@ -466,7 +456,7 @@ func malshine() {
 }
 
 func NewJob(line string) *Job {
-	splitLine := strings.Split(line, " ")
+	splitLine := strings.Split(line, "|")
 	// remove empty strings
 	filterdSplitLine := make([]string, 0)
 	for _, s := range splitLine {
@@ -534,6 +524,15 @@ func callSccat() []byte {
 }
 func callSccatmgr() []byte {
 	cmdStruct := exec.Command("/usr/bin/sacctmgr", "show", "account", "format=Account,Org", "-p")
+	cmdOutput, err := cmdStruct.Output()
+	if err != nil {
+		panic(err)
+	}
+	return cmdOutput
+}
+
+func callsqueue() []byte {
+	cmdStruct := exec.Command("/usr/bin/squeue", "-state=R", "--Format=\"JobId:|,UserName:|,Account:|,partition:|,QOS:|,tres-alloc:\"")
 	cmdOutput, err := cmdStruct.Output()
 	if err != nil {
 		panic(err)
