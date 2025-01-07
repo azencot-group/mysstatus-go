@@ -477,7 +477,14 @@ func NewJob(line string) *Job {
 		if strings.Contains(gpu, "gres/gpu:") {
 			gpu_name := strings.Split(strings.Replace(gpu, "gres/gpu:", "", 1), "=")[0]
 			gpu_amount := strings.Split(gpu, "=")[1]
-			println(gpu_name, gpu_amount)
+			// clean gpu_amount input before converting to int
+			// replace everything that is not a number with an empty string
+			gpu_amount = strings.Map(func(r rune) rune {
+				if r < '0' || r > '9' {
+					return -1
+				}
+				return r
+			}, gpu_amount)
 			i, err := strconv.Atoi(gpu_amount)
 			if err != nil {
 				panic(err)
