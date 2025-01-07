@@ -535,6 +535,8 @@ func callsqueue() []byte {
 	cmdStruct := exec.Command("/usr/bin/squeue", "-state=R", "--Format", "\"JobId:|,UserName:|,Account:|,partition:|,QOS:|,tres-alloc:\"")
 	cmdOutput, err := cmdStruct.Output()
 	if err != nil {
+		// print the error message
+		println(err.Error())
 		panic(err)
 	}
 	return cmdOutput
