@@ -268,7 +268,7 @@ func malshine() {
 	split_squeue := bytes.Split(squeueByteSlice, []byte("\n"))
 	UserJobTable := make(map[string][]*Job)
 	userAccountTable := make(map[string]string)
-	for _, line := range split_squeue[2:] {
+	for _, line := range split_squeue[1:] {
 		if len(line) > 0 {
 			job := NewJob(string(line))
 			UserJobTable[job.User] = append(UserJobTable[job.User], job)
@@ -465,8 +465,10 @@ func NewJob(line string) *Job {
 		}
 	}
 	jobID := filterdSplitLine[0]
+	println(jobID)
 	User := filterdSplitLine[1]
 	Account := filterdSplitLine[2]
+	println(User)
 	println(Account)
 	QOS := filterdSplitLine[4]
 	Data := filterdSplitLine[len(filterdSplitLine)-1]
