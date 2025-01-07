@@ -465,8 +465,8 @@ func NewJob(line string) *Job {
 			filterdSplitLine = append(filterdSplitLine, s)
 		}
 	}
-	jobID := filterdSplitLine[0]
-	User := filterdSplitLine[1]
+	jobID := filterdSplitLine[1]
+	User := filterdSplitLine[0]
 	Account := filterdSplitLine[2]
 	QOS := filterdSplitLine[4]
 	Data := filterdSplitLine[len(filterdSplitLine)-1]
@@ -541,7 +541,7 @@ func callSccatmgr() []byte {
 }
 
 func callsqueue() []byte {
-	cmdStruct := exec.Command("/usr/bin/squeue", "--state=R", "--Format", "\"JobId:|,UserName:|,Account:|,partition:|,QOS:|,tres-alloc:\"")
+	cmdStruct := exec.Command("/usr/bin/squeue", "--state=R", "--Format", "\"UserName:|,JobId:|,Account:|,partition:|,QOS:|,tres-alloc:\"")
 	cmdOutput, err := cmdStruct.Output()
 	if err != nil {
 		panic(err)
