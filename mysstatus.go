@@ -332,12 +332,12 @@ func malshine() {
 	fmt.Println("User Gpu Summary:")
 	maxUserLen := 0
 	for _, user := range keys {
-		userTotalLen := len(user) + 4 + len(userAccountTable[user])
+		userTotalLen := len(user) + len(userAccountTable[user])
 		if userTotalLen > maxUserLen {
 			maxUserLen = userTotalLen
 		}
 	}
-	padh := strings.Repeat(" ", max(maxUserLen-3, 9))
+	padh := strings.Repeat(" ", max(maxUserLen-1, 9))
 	header := "#  | User" + padh + "|  Total "
 	for _, k := range gpuKeys {
 		header += " | " + k
@@ -355,7 +355,7 @@ func malshine() {
 			number += " "
 		}
 		total := strconv.Itoa(UserGpuUseTable[user]["total"]) + "(" + strconv.Itoa(UserGpuQosTable[user]["total"]) + ")"
-		UserTotalLen := len(user) + 4 + len(userAccountTable[user])
+		UserTotalLen := len(user) + len(userAccountTable[user])
 		pad := strings.Repeat(" ", max(maxUserLen-UserTotalLen, 0))
 		padt := strings.Repeat(" ", max(len(" Total ")-len(total), 0))
 		userLine := number + " | " + user + "(" + userAccountTable[user] + ")" + pad + " | " + total + padt
@@ -378,6 +378,8 @@ func malshine() {
 		return AccountGpuUseTable[accountKeys[i]]["total"] > AccountGpuUseTable[accountKeys[j]]["total"]
 	})
 	fmt.Println("Account Gpu Summary:")
+
+	account_to_qos_max := compute_max_qos(gpuKeys)
 	maxAccountLen := 0
 	for _, account := range accountKeys {
 		AccountTotalLen := len(account) + 2
@@ -385,10 +387,10 @@ func malshine() {
 			maxAccountLen = AccountTotalLen
 		}
 	}
-	padh = strings.Repeat(" ", max(maxAccountLen-6, 0))
-	header = "#  | Account" + padh + "|  Total "
+	padh = strings.Repeat(" ", max(maxAccountLen-8, 0))
+	header = "#  | Account" + padh + "| Total   "
 	for _, k := range gpuKeys {
-		header += " | " + k
+		header += "  | " + k + " "
 	}
 	fmt.Println(header)
 	for i, account := range accountKeys {
@@ -399,14 +401,19 @@ func malshine() {
 		if i < 9 && i > 2 {
 			number += " "
 		}
-		total := strconv.Itoa(AccountGpuUseTable[account]["total"]) + "(" + strconv.Itoa(AccountGpuQosTable[account]["total"]) + ")"
+		total_qos := 0
+		for _, k := range gpuKeys {
+			total_qos += account_to_qos_max[account][k]
+		}
+		total_qos_str := strconv.Itoa(total_qos)
+		total := strconv.Itoa(AccountGpuUseTable[account]["total"]) + "(" + strconv.Itoa(AccountGpuQosTable[account]["total"]) + "/" + total_qos_str + ")"
 		AccountTotalLen := len(account) + 2
 		pad := strings.Repeat(" ", max(maxAccountLen-AccountTotalLen, 0))
-		padt := strings.Repeat(" ", max(len(" Total ")-len(total), 0))
+		padt := strings.Repeat(" ", max(len(" Total   ")-len(total), 0))
 		accountLine := number + " | " + account + pad + " | " + total + padt
 		for _, k := range gpuKeys {
-			numGpu := strconv.Itoa(AccountGpuUseTable[account][k]) + "(" + strconv.Itoa(AccountGpuQosTable[account][k]) + ")"
-			padg := strings.Repeat(" ", max(len(k)-len(numGpu), 0))
+			numGpu := strconv.Itoa(AccountGpuUseTable[account][k]) + "(" + strconv.Itoa(AccountGpuQosTable[account][k]) + "/" + strconv.Itoa(account_to_qos_max[account][k]) + ")"
+			padg := strings.Repeat(" ", max(len(k)+2-len(numGpu), 0))
 			accountLine += " | " + numGpu + padg
 		}
 		if AccountGpuUseTable[account]["total"] > 0 {
@@ -546,6 +553,46 @@ func callsqueue() []byte {
 		panic(err)
 	}
 	return cmdOutput
+}
+
+func compute_max_qos(avilable_cards []string) map[string]map[string]int {
+	cmdStruct := exec.Command("/usr/bin/sacctmgr", "show", "qos", "format=Name,MaxTRESPA", "-Pn")
+	cmdOutput, err := cmdStruct.Output()
+	if err != nil {
+		panic(err)
+	}
+	maxQOS := make(map[string]map[string]int)
+	for _, line := range strings.Split(string(cmdOutput), "\n") {
+		if line == "" {
+			continue
+		}
+		fields := strings.Split(line, "|")
+		if len(fields) < 1 {
+			continue
+		}
+		account := fields[0]
+		for _, card := range avilable_cards {
+			maxQOS[account] = make(map[string]int)
+			maxQOS[account][card] = 0
+		}
+		if len(fields) != 2 {
+			continue
+		}
+		qos_card := fields[1]
+		Data := strings.Split(qos_card, ",")
+		for _, gpu := range Data {
+			if strings.Contains(gpu, "gres/gpu:") {
+				gpu_name := strings.Split(strings.Replace(gpu, "gres/gpu:", "", 1), "=")[0]
+				gpu_amount := strings.Split(gpu, "=")[1]
+				i, err := strconv.Atoi(gpu_amount)
+				if err != nil {
+					panic(err)
+				}
+				maxQOS[account][gpu_name] = i
+			}
+		}
+	}
+	return maxQOS
 }
 
 func nodeSummry() {
