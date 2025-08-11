@@ -615,7 +615,72 @@ func nodeSummry() {
 	printSummry(nodeList)
 }
 
+func callResrvation() []byte {
+	cmdStruct := exec.Command("/usr/bin/scontrol", "show", "reservation")
+	cmdOutput, err := cmdStruct.Output()
+	if err != nil {
+		panic(err)
+	}
+	return cmdOutput
+}
+func reservation() {
+	byteSlice := callResrvation()
+
+	// Split reservations by double newlines
+	reservations := bytes.Split(byteSlice, []byte("\n\n"))
+
+	for _, reservation := range reservations {
+		if len(reservation) == 0 {
+			continue
+		}
+
+		reservationText := string(reservation)
+		lines := strings.Split(reservationText, "\n")
+
+		var reservationName, startTime, endTime, nodes string
+
+		for _, line := range lines {
+			line = strings.TrimSpace(line)
+			if strings.Contains(line, "ReservationName=") {
+				// Parse the first line which contains ReservationName, StartTime, EndTime
+				parts := strings.Fields(line)
+				for _, part := range parts {
+					if strings.HasPrefix(part, "ReservationName=") {
+						reservationName = strings.TrimPrefix(part, "ReservationName=")
+					} else if strings.HasPrefix(part, "StartTime=") {
+						startTime = strings.TrimPrefix(part, "StartTime=")
+					} else if strings.HasPrefix(part, "EndTime=") {
+						endTime = strings.TrimPrefix(part, "EndTime=")
+					}
+				}
+			} else if strings.Contains(line, "Nodes=") {
+				// Find the Nodes= part in the line
+				nodeStart := strings.Index(line, "Nodes=")
+				if nodeStart != -1 {
+					nodePart := line[nodeStart+6:] // Skip "Nodes="
+					// Find the end of the nodes list (next space-separated field)
+					nodeEnd := strings.Index(nodePart, " ")
+					if nodeEnd != -1 {
+						nodes = nodePart[:nodeEnd]
+					} else {
+						nodes = nodePart
+					}
+				}
+			}
+		}
+
+		if reservationName != "" {
+			fmt.Printf("reservation Name: %s\n", reservationName)
+			fmt.Printf("    Start Time: %s\n", startTime)
+			fmt.Printf("    End Time: %s\n", endTime)
+			fmt.Printf("    Nodes: %s\n", nodes)
+			fmt.Println()
+		}
+	}
+}
+
 func main() {
 	nodeSummry()
 	malshine()
+	reservation()
 }
